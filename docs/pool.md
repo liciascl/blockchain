@@ -6,9 +6,8 @@
 2. Preencha o formulário
 4. Aguarde o seu nome aparecer na lista
 
+[Entrar na pool](https://github.com/liciascl/blockchain/issues/new?template=join_pool.yml&labels=join-pool&title=Inscri%C3%A7%C3%A3o+na+pool){ .md-button .md-button--primary }
 
-[Entrar na pool](https://github.com/liciascl/blockchain/issues/new?template=join_pool.yml){ .md-button .md-button--primary }
----
 
 ## Participantes
 A lista abaixo é atualizada automaticamente:

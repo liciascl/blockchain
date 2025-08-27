@@ -1,28 +1,30 @@
-name: "Entrar na pool"
+name: "Entrar na Pool"
 description: Inscreva-se na pool de mineração da turma.
+title: "Inscrição na pool"
 labels: ["join-pool"]
 body:
-- type: input
-id: name
-attributes:
-label: Seu nome
-description: Este nome aparecerá na lista pública de participantes.
-placeholder: Seu nome ou apelido
-validations:
-required: true
-- type: input
-id: school
-attributes:
-label: Sua escola
-description: Escreva o nome da sua escola
-placeholder: Nome da escola
-validations:
-required: true
-# Opcional: turma/série
-- type: input
-id: group
-attributes:
-label: Turma/Série (opcional)
-placeholder: 1ºC, 9ºB, 3ª série...
-validations:
-required: false
+  - type: input
+    id: name
+    attributes:
+      label: Seu nome
+      description: Este nome aparecerá na lista pública de participantes.
+      placeholder: Seu nome ou apelido
+    validations:
+      required: true
+
+  - type: input
+    id: school
+    attributes:
+      label: Sua escola
+      description: Ex.: E.E. João Silva, Colégio X...
+      placeholder: Nome da escola
+    validations:
+      required: true
+
+  - type: input
+    id: group
+    attributes:
+      label: Turma/Série (opcional)
+      placeholder: 1ºC, 9ºB, 3ª série...
+    validations:
+      required: false
