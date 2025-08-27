@@ -1,0 +1,72 @@
+name: Sync Pool from Issues
+id: fields
+run: |
+body=$(cat <<'MD'
+${{ steps.parse.outputs.ISSUE_BODY }}
+MD
+)
+# Extrai respostas logo após os títulos dos campos do GitHub Forms
+name=$(echo "$body" | awk '/^### Seu nome/{getline; print $0}' | sed 's/^ *//; s/ *$//')
+school=$(echo "$body" | awk '/^### Sua escola/{getline; print $0}' | sed 's/^ *//; s/ *$//')
+group=$(echo "$body" | awk '/^### Turma\/Série \(opcional\)/{getline; print $0}' | sed 's/^ *//; s/ *$//')
+
+
+# Fallback
+if [ -z "$name" ]; then name="${{ github.event.issue.user.login }}"; fi
+
+
+echo "name=$name" >> $GITHUB_OUTPUT
+echo "school=$school" >> $GITHUB_OUTPUT
+echo "group=$group" >> $GITHUB_OUTPUT
+
+
+- name: Update pool.json
+run: |
+file=docs/data/pool.json
+if [ ! -f "$file" ]; then
+mkdir -p docs/data
+echo '{"participants":[]}' > "$file"
+fi
+
+
+name='${{ steps.fields.outputs.name }}'
+school='${{ steps.fields.outputs.school }}'
+group='${{ steps.fields.outputs.group }}'
+now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+
+# Insere/atualiza participante único por (name, school)
+tmp=$(mktemp)
+jq --arg name "$name" --arg school "$school" --arg group "$group" --arg now "$now" '
+(.participants //= []) |
+( .participants |= (
+any(.name == $name and .school == $school)
+? (map(if .name == $name and .school == $school then (.group = ($group|select(. != "")) | .joined_at = .joined_at // $now) else . end))
+: (. + [{"name": $name, "school": $school, "group": ($group|select(. != "")), "joined_at": $now}])
+)
+)
+' "$file" > "$tmp" && mv "$tmp" "$file"
+
+
+echo "Atualizado $file:" && cat "$file"
+
+
+- name: Commit & push
+run: |
+git config user.name "github-actions"
+git config user.email "github-actions@users.noreply.github.com"
+git add docs/data/pool.json
+git commit -m "chore(pool): sync from issue #${{ github.event.issue.number }} (nome+escola)"
+git push
+
+
+- name: Comment back
+uses: actions/github-script@v7
+with:
+script: |
+const issue_number = context.payload.issue.number;
+github.rest.issues.createComment({
+...context.repo,
+issue_number,
+body: `Obrigado por entrar na pool! Seu nome deve aparecer na página da pool em breve.`
+})

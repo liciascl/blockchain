@@ -1,0 +1,20 @@
+site_name: Blockchain Classroom
+site_url: https://liciascl.github.io/blockchain
+theme:
+name: material
+features:
+- content.code.copy
+palette:
+primary: indigo
+accent: teal
+nav:
+- Início: index.md
+- Pool: pool.md
+extra_javascript:
+- assets/app.js
+markdown_extensions:
+- admonition
+- pymdownx.details
+- pymdownx.superfences
+- toc:
+permalink: true
