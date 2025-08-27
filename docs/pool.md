@@ -7,11 +7,8 @@
 4. Aguarde o seu nome aparecer na lista
 
 
-[Entrar na pool](https://github.com/SEU_USUARIO/blockchain-classroom/issues/new?template=join_pool.yml) { .md-button .md-button--primary }
-
-
+[Entrar na pool](https://github.com/liciascl/blockchain/issues/new?template=join_pool.yml){ .md-button .md-button--primary }
 ---
-
 
 ## Participantes
 A lista abaixo é atualizada automaticamente:

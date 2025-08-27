@@ -14,6 +14,7 @@ extra_javascript:
 - assets/app.js
 markdown_extensions:
 - admonition
+- attr_list
 - pymdownx.details
 - pymdownx.superfences
 - toc:
