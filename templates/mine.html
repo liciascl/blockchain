@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mineração – Blockchain Classroom</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=schulte3">
+    <style>
+      .layout{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start;padding:16px;max-width:1400px;margin:0 auto}
+      @media (max-width:900px){.layout{grid-template-columns:1fr}}
+      .card{background:#fff;border:1px solid #e6e6e6;border-radius:12px;padding:12px}
+      .muted{opacity:.8}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+      .chain .block{border:1px solid #ddd;border-radius:10px;padding:10px;margin:6px 0;background:#fafafa}
+      .chain .block.open{background:#fffbe6;outline:3px dashed #a6b6ff;outline-offset:4px}
+      .chain .arrow{text-align:center;margin:4px 0}
+      .meta-line{margin-top:2px;line-height:1.25}
+      .hashwrap{word-break:break-all;overflow-wrap:anywhere}
+
+      .board{display:grid;gap:8px;--cell:64px}
+      #board .cell{
+        width:var(--cell);height:var(--cell);
+        display:flex;align-items:center;justify-content:center;
+        border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;
+        font-weight:600;font-size:calc(var(--cell)*0.42);user-select:none;
+      }
+
+      .btn{padding:10px 14px;border-radius:10px;border:1px solid #ccc;background:#fff;cursor:pointer}
+      .btn.primary{background:#111;color:#fff;border-color:#111}
+      .actions{display:flex;gap:8px;margin-top:8px}
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside>
+        <section class="card">
+          <h2>Pool de Participantes</h2>
+          <ul id="pool-list"><li>Carregando...</li></ul>
+        </section>
+        <section class="card">
+          <h2>Ranking de Mineradores</h2>
+          <table id="lb-table"><tbody><tr><td>Carregando...</td></tr></tbody></table>
+        </section>
+      </aside>
+
+      <main>
+        <section class="card">
+          <h2>Blockchain</h2>
+          <div id="chain" class="chain">Carregando...</div>
+        </section>
+
+        <section class="card">
+          <h2>Puzzle atual <span id="puzzle-type" class="muted"></span></h2>
+          <div id="puzzle-hint" class="muted" style="margin:.25rem 0 .5rem"></div>
+          <div id="board" class="board" style="margin-bottom:8px"></div>
+          <div class="actions">
+            <button id="btn-submit" class="btn primary">Validar transação</button>
+          </div>
+          <div id="status" class="status" style="margin-top:8px"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='mine.js') }}?v=schulte3"></script>
+  </body>
+</html>

@@ -1,0 +1,215 @@
+/* ====== Reset & base ====== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: #f6f7fb;
+  color: #222;
+  font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+}
+
+h1, h2, h3 { margin: 0 0 .6rem; }
+.muted { opacity: .8; }
+.mono  { font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+
+/* ====== Layout ====== */
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+.sidebar .section { margin-bottom: 16px; }
+
+/* ====== Cards ====== */
+.card {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 1px rgba(0,0,0,.02);
+}
+
+/* ====== Botões ====== */
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  transition: transform .02s ease, background .15s ease, border-color .15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn.primary { background: #111; color: #fff; border-color: #111; }
+.actions { display: flex; gap: 8px; margin-top: 8px; }
+
+/* ====== Listas simples ====== */
+#pool-list { margin: .25rem 0 0 1rem; padding: 0; }
+#pool-list li { margin: .25rem 0; }
+
+/* ====== Tabela do ranking ====== */
+#lb-table { width: 100%; border-collapse: collapse; }
+#lb-table td, #lb-table th { padding: 6px 4px; border-bottom: 1px dashed #eee; }
+#lb-table tr:last-child td { border-bottom: 0; }
+
+/* ====== Blockchain ====== */
+#chain { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.chain .block {
+  min-width: 260px;
+  max-width: 380px;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.chain .block.open {
+  background: #fffbe6;
+  outline: 3px dashed #b6c7ff;
+  outline-offset: 4px;
+}
+.chain .block .title { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+.chain .block .row   { margin-top: 4px; line-height: 1.35; }
+.chain .block .mono  { word-break: break-all; } /* hash completo sem truncar */
+
+/* ====== Puzzle: Schulte ====== */
+#puzzle-type { font-weight: 600; margin-left: 4px; }
+#puzzle-hint { margin: .25rem 0 .5rem; }
+
+.board.schulte {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+}
+.board.schulte .cell {
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #dcdcdc;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer; user-select: none;
+  min-width: 58px; min-height: 58px;        /* bom pra 5x5 e 7x7 */
+  font-weight: 800; font-size: clamp(18px, 2vw, 22px);
+  transition: background .12s ease, color .12s ease, transform .02s ease;
+}
+.board.schulte .cell:hover { transform: translateY(-1px); }
+.board.schulte .cell.pick  { background: #111; color: #fff; }
+
+#status { margin-top: 8px; min-height: 1.2em; }
+.main h2 { font-size: 26px; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  #chain { justify-content: flex-start; }
+}
+
+/* ===== Landing (/ ) ===== */
+.landing {
+  min-height: 100vh;
+  background: #f6f7fb;
+}
+
+.landing .wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+/* Card base já existe no seu CSS; reforço aqui caso precise */
+.card {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+}
+
+/* Título da landing */
+.join-card .title {
+  font-size: clamp(22px, 2.4vw, 34px);
+  line-height: 1.25;
+  margin-bottom: 18px;
+  font-weight: 800;
+}
+
+/* Formulário central e responsivo */
+.join-card {
+  width: min(1100px, 100%);
+}
+
+.join-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Inputs maiores e bonitos */
+.input {
+  width: 100%;
+  height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #dcdde2;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 16px;
+  outline: none;
+}
+.input:focus {
+  border-color: #7b8cff;
+  box-shadow: 0 0 0 3px rgba(123,140,255,0.15);
+}
+
+/* Botões já existem; garantimos consistência aqui */
+.btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #d0d0d7;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn.primary {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* Nota abaixo do formulário */
+.join-card .note {
+  margin-top: 10px;
+}
+
+/* Responsividade: empilha no mobile */
+@media (max-width: 900px) {
+  .join-form {
+    grid-template-columns: 1fr;
+  }
+  .btn.primary {
+    width: 100%;
+  }
+}
+/* Schulte feedback de clique */
+#board .cell {
+  transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+}
+
+/* Feedback do Schulte */
+#board .cell {
+  transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+}
+
+#board .cell.cleared {
+  background: #20c23e;
+  color: transparent;         /* esconde o número */
+  border-color: #20c23e;
+}
+
+#board .cell.wrong {
+  background: #ffe7e7;
+  border-color: #d33;
+  color: #d33;
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blockchain Insper</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" />
+  </head>
+  <body class="landing">
+    <div class="wrap">
+      <div class="join-card card">
+        <h1 class="title">Blockchain Insper</h1>
+
+        <form action="{{ url_for('join') }}" method="post" class="join-form">
+          <input
+            type="text"
+            name="name"
+            class="input"
+            placeholder="Seu nome"
+            required
+          />
+          <input
+            type="text"
+            name="school"
+            class="input"
+            placeholder="Escola"
+            required
+          />
+          <input
+            type="text"
+            name="group"
+            class="input"
+            placeholder="Turma/Série (opcional)"
+          />
+          <button class="btn primary" type="submit">Entrar</button>
+        </form>
+
+        <p class="muted note">
+          Preencha para entrar no Pool de Mineração
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
