@@ -13,6 +13,9 @@
 
   let schulte = { size: 0, grid: [], picks: [], next: 1, total: 0 };
   let currentOpenBlockId = null;
+  // --- estado da lista de blocos (compacta por padrão)
+  let chainShowAll = false;
+  const MAX_VISIBLE_BLOCKS = 6; // mude aqui se quiser mostrar mais/menos
 
   async function jget(u) {
     const r = await fetch(u, { credentials: 'include' });
@@ -57,36 +60,79 @@
   }
 
   async function refreshChain() {
-    const data = await jget('/api/blocks?limit=40');
-    const items = data.items || [];
-    if (!items.length) { chainEl.textContent = 'Carregando...'; return; }
+  const data = await jget('/api/blocks?limit=200');   // pega bastante e decide no front
+  const all = data.items || [];
+  const hidden = (!chainShowAll && all.length > MAX_VISIBLE_BLOCKS)
+    ? all.length - MAX_VISIBLE_BLOCKS : 0;
 
-    chainEl.innerHTML = items.map(b => {
-      const mined = !!b.mined_at;
-      const classes = `block ${mined ? '' : 'open'}`;
-      const miner = mined ? `${escapeHtml(b.miner_name || '—')} (${escapeHtml(b.miner_school || '')})` : '— ()';
-      const when  = mined ? b.mined_at : b.created_at;
-      const lines = [];
+  // só os últimos N quando compacto
+  const items = hidden ? all.slice(-MAX_VISIBLE_BLOCKS) : all;
 
-      if (mined) {
-        lines.push(`<div class="row">⛏ ${miner}</div>`);
-        lines.push(`<div class="row">✅ ${fmtDate(when)}</div>`);
-        lines.push(`<div class="row mono">nonce: ${b.nonce ?? '—'}</div>`);
-        lines.push(`<div class="row mono">hash: ${b.hash ?? '—'}</div>`);
-        lines.push(`<div class="row">dificuldade: ${b.difficulty}</div>`);
-      } else {
-        lines.push(`<div class="row">⏳ aguardando minerador</div>`);
-        lines.push(`<div class="row">🕒 ${fmtDate(when)}</div>`);
-        lines.push(`<div class="row">dificuldade: ${b.difficulty}</div>`);
-      }
+  // controle (mostrar todos/menos)
+  const controlsHtml =
+    (all.length > MAX_VISIBLE_BLOCKS)
+      ? `<div class="controls">
+           <button id="toggle-chain" class="btn link">
+             ${chainShowAll ? `Mostrar só os últimos ${MAX_VISIBLE_BLOCKS}` : `Mostrar todos (${all.length})`}
+           </button>
+         </div>`
+      : '';
 
-      return `
-        <div class="${classes}">
-          <div class="title">Bloco #${b.id}</div>
-          ${lines.join('')}
-        </div>`;
-    }).join('');
-  }
+  if (!items.length) { chainEl.textContent = 'Carregando...'; return; }
+
+  // helper p/ abreviar hash
+  const short = (h) => h ? `${h.slice(0,12)}…${h.slice(-8)}` : '—';
+
+  chainEl.innerHTML = controlsHtml + items.map(b => {
+    const mined = !!b.mined_at;
+    const miner = mined
+      ? `${escapeHtml(b.miner_name || '—')} (${escapeHtml(b.miner_school || '')})`
+      : '— ()';
+    const when  = mined ? b.mined_at : b.created_at;
+
+    // resumo sempre visível
+    const summary = [
+      `<div class="title">Bloco #${b.id}</div>`,
+      mined
+        ? `<div class="row">⛏ ${miner}</div>
+           <div class="row">✅ ${fmtDate(when)}</div>`
+        : `<div class="row">⏳ aguardando minerador</div>
+           <div class="row">🕒 ${fmtDate(when)}</div>`,
+      `<div class="row">dificuldade: ${b.difficulty}</div>`
+    ].join('');
+
+    // detalhes que abrem no clique
+    const details = [
+      mined ? `<div class="row mono">nonce: ${b.nonce ?? '—'}</div>` : '',
+      mined ? `<div class="row mono">hash: ${b.hash ?? '—'}</div>` : '',
+      // “transação” ilustrativa
+      mined
+        ? `<div class="row">💸 tx: ${escapeHtml((b.miner_name||'Aluno'))} → Prog de Bolsas Insper (R$ ${(10 + (b.id%9))*3},00) • prev ${short(b.prev_hash)} • hash ${short(b.hash)}</div>`
+        : '' 
+    ].join('');
+
+    return `
+      <div class="block ${mined ? '' : 'open'}" data-id="${b.id}">
+        ${summary}
+        <div class="details">${details}</div>
+        <div class="expand-hint">Clique para ${mined ? 'ver/fechar detalhes' : 'ver detalhes'}</div>
+      </div>`;
+  }).join('');
+
+  // botão: mostrar todos/menos
+  document.getElementById('toggle-chain')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    chainShowAll = !chainShowAll;
+    refreshChain();
+  });
+
+  // accordion: abre/fecha detalhes por card
+  chainEl.querySelectorAll('.block').forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.toggle('expanded');
+    });
+  });
+}
 
   async function loadCurrentOnce() {
     const data = await jget('/api/block/current');

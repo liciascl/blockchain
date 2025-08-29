@@ -75,6 +75,18 @@ h1, h2, h3 { margin: 0 0 .6rem; }
 .chain .block .row   { margin-top: 4px; line-height: 1.35; }
 .chain .block .mono  { word-break: break-all; } /* hash completo sem truncar */
 
+/* --- Compactação da blockchain --- */
+.chain .controls{ display:flex; justify-content:flex-end; margin:4px 0 8px; }
+.btn.link{ background:transparent; border:none; padding:4px 8px; color:#0b57d0; cursor:pointer; }
+.btn.link:hover{ text-decoration:underline; }
+
+/* accordion */
+.chain .block{ cursor:pointer; }
+.chain .block .details{ display:none; margin-top:6px; }
+.chain .block.expanded .details{ display:block; }
+.chain .expand-hint{ font-size:.9rem; opacity:.65; margin-top:4px; }
+
+
 /* ====== Puzzle: Schulte ====== */
 #puzzle-type { font-weight: 600; margin-left: 4px; }
 #puzzle-hint { margin: .25rem 0 .5rem; }
@@ -213,3 +225,4 @@ h1, h2, h3 { margin: 0 0 .6rem; }
   border-color: #d33;
   color: #d33;
 }
+
