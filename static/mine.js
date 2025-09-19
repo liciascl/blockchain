@@ -17,6 +17,10 @@
   let chainShowAll = false;
   const MAX_VISIBLE_BLOCKS = 6; // mude aqui se quiser mostrar mais/menos
 
+  // --- estado da lista de participantes (compacta por padrão)
+  let poolShowAll = false;
+  const MAX_VISIBLE_PARTICIPANTS = 10;
+
   async function jget(u) {
     const r = await fetch(u, { credentials: 'include' });
     if (!r.ok) throw new Error(`${u} -> ${r.status}`);
@@ -29,7 +33,6 @@
       credentials: 'include',
       body: JSON.stringify(data || {})
     });
-    // Mesmo em erro 4xx/5xx, tento ler JSON p/ mostrar msg útil
     let payload = null;
     try { payload = await r.json(); } catch {}
     if (!r.ok) {
@@ -41,8 +44,38 @@
 
   async function refreshParticipants() {
     const data = await jget('/api/participants?limit=500');
-    if (!data.items?.length) { poolList.innerHTML = '<li>Carregando...</li>'; return; }
-    poolList.innerHTML = data.items.map(p => `<li>${escapeHtml(p.name)} — ${escapeHtml(p.school)}</li>`).join('');
+    const all = data.items || [];
+
+    if (!all.length) {
+      poolList.innerHTML = '<li>Carregando...</li>';
+      return;
+    }
+
+    const hidden = (!poolShowAll && all.length > MAX_VISIBLE_PARTICIPANTS)
+      ? all.length - MAX_VISIBLE_PARTICIPANTS : 0;
+
+    // pega os últimos N
+    const items = hidden ? all.slice(-MAX_VISIBLE_PARTICIPANTS) : all;
+
+    const controlsHtml = (all.length > MAX_VISIBLE_PARTICIPANTS)
+      ? `<li class="controls">
+           <button id="toggle-pool" class="btn link">
+             ${poolShowAll
+                ? `Mostrar só os últimos ${MAX_VISIBLE_PARTICIPANTS}`
+                : `Mostrar todos (${all.length})`}
+           </button>
+         </li>`
+      : '';
+
+    poolList.innerHTML = items
+      .map(p => `<li>${escapeHtml(p.name)} — ${escapeHtml(p.school)}</li>`)
+      .join('') + controlsHtml;
+
+    document.getElementById('toggle-pool')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      poolShowAll = !poolShowAll;
+      refreshParticipants();
+    });
   }
 
   async function refreshLeaderboard() {
@@ -60,79 +93,70 @@
   }
 
   async function refreshChain() {
-  const data = await jget('/api/blocks?limit=200');   // pega bastante e decide no front
-  const all = data.items || [];
-  const hidden = (!chainShowAll && all.length > MAX_VISIBLE_BLOCKS)
-    ? all.length - MAX_VISIBLE_BLOCKS : 0;
+    const data = await jget('/api/blocks?limit=200');
+    const all = data.items || [];
+    const hidden = (!chainShowAll && all.length > MAX_VISIBLE_BLOCKS)
+      ? all.length - MAX_VISIBLE_BLOCKS : 0;
+    const items = hidden ? all.slice(-MAX_VISIBLE_BLOCKS) : all;
 
-  // só os últimos N quando compacto
-  const items = hidden ? all.slice(-MAX_VISIBLE_BLOCKS) : all;
+    const controlsHtml =
+      (all.length > MAX_VISIBLE_BLOCKS)
+        ? `<div class="controls">
+             <button id="toggle-chain" class="btn link">
+               ${chainShowAll ? `Mostrar só os últimos ${MAX_VISIBLE_BLOCKS}` : `Mostrar todos (${all.length})`}
+             </button>
+           </div>`
+        : '';
 
-  // controle (mostrar todos/menos)
-  const controlsHtml =
-    (all.length > MAX_VISIBLE_BLOCKS)
-      ? `<div class="controls">
-           <button id="toggle-chain" class="btn link">
-             ${chainShowAll ? `Mostrar só os últimos ${MAX_VISIBLE_BLOCKS}` : `Mostrar todos (${all.length})`}
-           </button>
-         </div>`
-      : '';
+    if (!items.length) { chainEl.textContent = 'Carregando...'; return; }
 
-  if (!items.length) { chainEl.textContent = 'Carregando...'; return; }
+    const short = (h) => h ? `${h.slice(0,12)}…${h.slice(-8)}` : '—';
 
-  // helper p/ abreviar hash
-  const short = (h) => h ? `${h.slice(0,12)}…${h.slice(-8)}` : '—';
+    chainEl.innerHTML = controlsHtml + items.map(b => {
+      const mined = !!b.mined_at;
+      const miner = mined
+        ? `${escapeHtml(b.miner_name || '—')} (${escapeHtml(b.miner_school || '')})`
+        : '— ()';
+      const when  = mined ? b.mined_at : b.created_at;
 
-  chainEl.innerHTML = controlsHtml + items.map(b => {
-    const mined = !!b.mined_at;
-    const miner = mined
-      ? `${escapeHtml(b.miner_name || '—')} (${escapeHtml(b.miner_school || '')})`
-      : '— ()';
-    const when  = mined ? b.mined_at : b.created_at;
+      const summary = [
+        `<div class="title">Bloco #${b.id}</div>`,
+        mined
+          ? `<div class="row">⛏ ${miner}</div>
+             <div class="row">✅ ${fmtDate(when)}</div>`
+          : `<div class="row">⏳ aguardando minerador</div>
+             <div class="row">🕒 ${fmtDate(when)}</div>`,
+        `<div class="row">dificuldade: ${b.difficulty}</div>`
+      ].join('');
 
-    // resumo sempre visível
-    const summary = [
-      `<div class="title">Bloco #${b.id}</div>`,
-      mined
-        ? `<div class="row">⛏ ${miner}</div>
-           <div class="row">✅ ${fmtDate(when)}</div>`
-        : `<div class="row">⏳ aguardando minerador</div>
-           <div class="row">🕒 ${fmtDate(when)}</div>`,
-      `<div class="row">dificuldade: ${b.difficulty}</div>`
-    ].join('');
+      const details = [
+        mined ? `<div class="row mono">nonce: ${b.nonce ?? '—'}</div>` : '',
+        mined ? `<div class="row mono">hash: ${b.hash ?? '—'}</div>` : '',
+        mined
+          ? `<div class="row">💸 tx: ${escapeHtml((b.miner_name||'Aluno'))} → Prog de Bolsas Insper (R$ ${(10 + (b.id%9))*3},00) • prev ${short(b.prev_hash)} • hash ${short(b.hash)}</div>`
+          : '' 
+      ].join('');
 
-    // detalhes que abrem no clique
-    const details = [
-      mined ? `<div class="row mono">nonce: ${b.nonce ?? '—'}</div>` : '',
-      mined ? `<div class="row mono">hash: ${b.hash ?? '—'}</div>` : '',
-      // “transação” ilustrativa
-      mined
-        ? `<div class="row">💸 tx: ${escapeHtml((b.miner_name||'Aluno'))} → Prog de Bolsas Insper (R$ ${(10 + (b.id%9))*3},00) • prev ${short(b.prev_hash)} • hash ${short(b.hash)}</div>`
-        : '' 
-    ].join('');
+      return `
+        <div class="block ${mined ? '' : 'open'}" data-id="${b.id}">
+          ${summary}
+          <div class="details">${details}</div>
+          <div class="expand-hint">Clique para ${mined ? 'ver/fechar detalhes' : 'ver detalhes'}</div>
+        </div>`;
+    }).join('');
 
-    return `
-      <div class="block ${mined ? '' : 'open'}" data-id="${b.id}">
-        ${summary}
-        <div class="details">${details}</div>
-        <div class="expand-hint">Clique para ${mined ? 'ver/fechar detalhes' : 'ver detalhes'}</div>
-      </div>`;
-  }).join('');
-
-  // botão: mostrar todos/menos
-  document.getElementById('toggle-chain')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    chainShowAll = !chainShowAll;
-    refreshChain();
-  });
-
-  // accordion: abre/fecha detalhes por card
-  chainEl.querySelectorAll('.block').forEach(card => {
-    card.addEventListener('click', () => {
-      card.classList.toggle('expanded');
+    document.getElementById('toggle-chain')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      chainShowAll = !chainShowAll;
+      refreshChain();
     });
-  });
-}
+
+    chainEl.querySelectorAll('.block').forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('expanded');
+      });
+    });
+  }
 
   async function loadCurrentOnce() {
     const data = await jget('/api/block/current');
@@ -223,7 +247,6 @@
     }
   }
 
-  // ---- submissão (DEBOUNCE + mensagens do backend)
   let submitting = false;
   btnSubmit?.addEventListener('click', async () => {
     try {
@@ -235,7 +258,7 @@
         return;
       }
 
-      if (submitting) return; // debounce
+      if (submitting) return;
       submitting = true;
       btnSubmit.disabled = true;
       statusEl.textContent = '⛏ validando…';
@@ -243,12 +266,11 @@
       const positions = schulte.picks.map(p => [p.r, p.c]);
       const res = await jpost('/api/block/submit', { positions });
 
-      // o backend SEMPRE devolve {ok: bool, ...}
       if (!res.ok) {
         statusEl.textContent = res.reason
           ? `✖ ${res.reason}`
           : '✖ sequência incorreta';
-        btnSubmit.disabled = false; // deixa tentar de novo
+        btnSubmit.disabled = false;
         submitting = false;
         return;
       }
@@ -260,7 +282,7 @@
         refreshChain(),
         refreshLeaderboard()
       ]);
-      await loadCurrentOnce();   // novo bloco/puzzle
+      await loadCurrentOnce();
 
       submitting = false;
     } catch (e) {
